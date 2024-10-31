@@ -25,7 +25,6 @@
       event = ["CursorHold"];
       callback.__raw = ''
         function()
-          vim.o.updatetime = 250
         	vim.diagnostic.open_float(nil, { focus = false })
         end
       '';
