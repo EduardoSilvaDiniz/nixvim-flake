@@ -1,36 +1,63 @@
 {
   plugins = {
+    luasnip = {
+      enable = true;
+      fromVscode = [
+        { }
+      ];
+    };
     cmp = {
       enable = true;
       settings = {
         mapping = {
-          "<Tab>" = "cmp.mapping(cmp.mapping.select_next_item(), {'i', 's'})";
-          "<C-j>" = "cmp.mapping.select_next_item()";
-          "<C-k>" = "cmp.mapping.select_prev_item()";
-          "<C-e>" = "cmp.mapping.abort()";
-          "<C-b>" = "cmp.mapping.scroll_docs(-4)";
-          "<C-f>" = "cmp.mapping.scroll_docs(4)";
-          "<C-Space>" = "cmp.mapping.complete()";
+          "<C-p>" = "cmp.mapping.select_prev_item()";
+          "<C-n>" = "cmp.mapping.select_next_item()";
           "<CR>" = "cmp.mapping.confirm({ select = true })";
-          "<S-CR>" = "cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = true })";
+          "<C-Space>" = "cmp.mapping.complete()";
+          "<C-f>" = ''
+            cmp.mapping(function(fallback)
+            	if require("luasnip").jumpable(1) then
+            		require("luasnip").jump(1)
+            	else
+            		fallback()
+            	end
+            end, { "i", "s" })
+          '';
+          "<C-b>" = ''
+            	cmp.mapping(function(fallback)
+            		if require("luasnip").jumpable(-1) then
+            			require("luasnip").jump(-1)
+            		else
+            			fallback()
+            		end
+            	end, { "i", "s" })
+          '';
+          "<Tab>" = ''
+            cmp.mapping(function(fallback)
+            	local col = vim.fn.col(".") - 1
+            	if cmp.visible() then
+            			cmp.confirm({ behavior = cmp.ConfirmBehavior.Insert, select = true })
+            		elseif require("luasnip").expand_or_jumpable() then
+            			require("luasnip").expand_or_jump()
+            		elseif col == 0 or vim.fn.getline("."):sub(col, col):match("%s") then
+            			fallback()
+            		else
+            			cmp.complete()
+            	end
+            end, { "i", "s" })
+          '';
+          "<S-Tab>" = ''
+            cmp.mapping(function(fallback)
+            		if cmp.visible() then
+            			cmp.select_prev_item(select_opts)
+            		elseif require("luasnip").jumpable(-1) then
+            			require("luasnip").jump(-1)
+            		else
+            			fallback()
+            		end
+            end, { "i", "s" })
+          '';
         };
-        snippet = {
-          expand = "luasnip";
-        };
-        sources = [
-          {
-            name = "nvim_lsp";
-          }
-          {
-            name = "luasnip";
-          }
-          {
-            name = "path";
-          }
-          {
-            name = "buffer";
-          }
-        ];
         completion = {
           winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None,CursorLine:MyCursorLine";
           side_padding = 0;
@@ -53,39 +80,30 @@
             winhighlight = "Normal:Normal,FloatBorder:CmpCompletionBorder";
             border = "rounded";
           };
-          formatting = {
-            fields = ["kind" "abbr" "menu"];
-            format = ''
-              function(entry, vim_item)
-              	vim_item.kind = (cmp_kinds[vim_item.kind] or "")
+        };
 
-              	if entry == "Function" then
-              		local item = entry:get_completion_item()
+        formatting = {
+          fields = ["kind" "abbr" "menu"];
+        };
 
-              		log.debug(item)
+        snippet = {expand = "luasnip";};
 
-              		if item.detail then
-              			vim_item.menu = item.detail
-              		end
-              	end
+        sources = [{name = "nvim_lsp";} {name = "luasnip";} {name = "path";} {name = "buffer";}];
 
-              	vim_item.abbr = vim_item.abbr:match("[^(]+")
+        preselect = "cmp.PreselectMode.None";
+        sorting = {
+          comparators = [
+            "cmp.config.compare.exact"
+            "cmp.config.compare.recently_used"
+            "cmp.config.compare.score"
+          ];
+        };
 
-              	return vim_item
-              end;
-            '';
-          };
+        completeopt = "menu,menuone,noinsert";
+        performance = {
+          max_view_entries = 15;
         };
       };
-      preselect = "cmp.PreselectMode.None";
-      sorting = {
-        comparators = [
-          "cmp.config.compare.exact"
-          "cmp.config.compare.recently_used"
-          "cmp.config.compare.score"
-        ];
-      };
-      completeopt = "menu,menuone,noinsert";
 
       cmdline = {
         "/" = {

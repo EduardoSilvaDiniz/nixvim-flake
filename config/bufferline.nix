@@ -7,6 +7,10 @@
   javaPath = lib.getExe pkgs.jdt-language-server;
 in {
   plugins = {
+    lspkind = {
+      enable = true;
+      cmp.enable = true;
+    };
     oil.enable = true;
     web-devicons.enable = true;
     clangd-extensions.enable = true;
@@ -41,7 +45,6 @@ in {
     treesitter.enable = true;
     which-key.enable = true;
     friendly-snippets.enable = true;
-    luasnip.enable = true;
     nvim-autopairs.enable = true;
     rainbow-delimiters.enable = true;
     treesitter-context.enable = true;
